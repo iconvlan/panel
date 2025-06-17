@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Panel</title>
+</head>
+<body>
+  <h2>🔍 Filter Data</h2>
+  <select id="bulan">
+    <option value="1">Januari</option>
+    <option value="2">Februari</option>
+    <option value="3">Maret</option>
+    <option value="4">April</option>
+    <option value="5">Mei</option>
+    <option value="6">Juni</option>
+    <option value="7">Juli</option>
+    <option value="8">Agustus</option>
+    <option value="9">September</option>
+    <option value="10">Oktober</option>
+    <option value="11">November</option>
+    <option value="12">Desember</option>
+  </select>
+  <input type="number" id="tahun" placeholder="Tahun" value="2025">
+  <button onclick="loadData()">Download CSV</button>
+
+  <hr>
+
+  <h2>➕ Buat Akun Whitelist</h2>
+  <input type="email" id="email" placeholder="Email"><br>
+  <input type="password" id="password" placeholder="Password"><br>
+  <input type="text" id="pic_name" placeholder="Nama PIC"><br>
+  <input type="text" id="role" placeholder="Role (admin/user)"><br>
+  <button onclick="createUser()">Create</button>
+
+  <h2>🗑️ Hapus Akun Whitelist</h2>
+  <input type="email" id="delete_email" placeholder="Email user yang akan dihapus">
+  <button onclick="deleteUser()">Delete</button>
+
+  <h3>Ganti Password</h3>
+  <input type="email" id="pw_email" placeholder="Email user"><br>
+  <input type="password" id="pw_new" placeholder="Password baru"><br>
+  <button onclick="changePassword()">Ganti Password</button>
+
+  <script>
+    function convertToCSV(objArray) {
+      const array = Array.isArray(objArray) ? objArray : [objArray];
+      const keys = Object.keys(array[0] || {});
+      const csv = [keys.join(',')];
+      for (const row of array) {
+        csv.push(keys.map(k => JSON.stringify(row[k] ?? '')).join(','));
+      }
+      return csv.join('\n');
+    }
+
+    async function loadData() {
+      const bulan = document.getElementById('bulan').value;
+      const tahun = document.getElementById('tahun').value;
+      const res = await fetch(`/api/get-data?bulan=${bulan}&tahun=${tahun}`);
+      const data = await res.json();
+      const csv = convertToCSV(data);
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `data_${tahun}_${bulan}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    async function createUser() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const pic_name = document.getElementById('pic_name').value;
+      const role = document.getElementById('role').value;
+
+      const res = await fetch('/api/create-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, pic_name, role })
+      });
+
+      const result = await res.json();
+      alert(result.success ? '✅ Akun berhasil dibuat!' : '❌ Gagal: ' + result.error);
+    }
+
+    async function deleteUser() {
+      const email = document.getElementById('delete_email').value;
+
+      const res = await fetch('/api/delete-user', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+
+      const result = await res.json();
+      alert(result.success ? '✅ Akun berhasil dihapus!' : '❌ Gagal: ' + result.error);
+    }
+
+    async function changePassword() {
+      const email = document.getElementById("pw_email").value;
+      const newPassword = document.getElementById("pw_new").value;
+
+      const res = await fetch("/api/change-password", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, newPassword })
+      });
+
+      const result = await res.json();
+      alert(result.success ? "✅ Password berhasil diganti!" : "❌ Gagal: " + result.error);
+    }
+  </script>
+</body>
+</html>
