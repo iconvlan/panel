@@ -41,6 +41,8 @@
   <button onclick="changePassword()">Ganti Password</button>
 
   <script>
+    const BASE_URL = 'https://panel-six-psi.vercel.app';
+
     function convertToCSV(objArray) {
       const array = Array.isArray(objArray) ? objArray : [objArray];
       const keys = Object.keys(array[0] || {});
@@ -54,7 +56,7 @@
     async function loadData() {
       const bulan = document.getElementById('bulan').value;
       const tahun = document.getElementById('tahun').value;
-      const res = await fetch(`/api/get-data?bulan=${bulan}&tahun=${tahun}`);
+      const res = await fetch(`${BASE_URL}/api/get-data?bulan=${bulan}&tahun=${tahun}`);
       const data = await res.json();
       const csv = convertToCSV(data);
 
@@ -73,7 +75,7 @@
       const pic_name = document.getElementById('pic_name').value;
       const role = document.getElementById('role').value;
 
-      const res = await fetch('/api/create-user', {
+      const res = await fetch(`${BASE_URL}/api/create-user`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, pic_name, role })
@@ -86,7 +88,7 @@
     async function deleteUser() {
       const email = document.getElementById('delete_email').value;
 
-      const res = await fetch('/api/delete-user', {
+      const res = await fetch(`${BASE_URL}/api/delete-user`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -100,7 +102,7 @@
       const email = document.getElementById("pw_email").value;
       const newPassword = document.getElementById("pw_new").value;
 
-      const res = await fetch("/api/change-password", {
+      const res = await fetch(`${BASE_URL}/api/change-password`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, newPassword })
